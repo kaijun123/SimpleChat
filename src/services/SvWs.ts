@@ -29,20 +29,16 @@ class WsRouter {
 
   public addNewConnections(userId: string, ws: WebSocket) {
     // if there exist a connection with the same userId, throw an error
-    if (this.connectionExist(userId)) {
-      throw new Error("userId already in use")
+    if (!this.connectionExist(userId)) {
+      this.pool[userId] = ws
     }
-
-    this.pool[userId] = ws
   }
 
   public removeConnections(userId: string, ws: WebSocket) {
     // if there exist a connection with the same userId, throw an error
-    if (!this.connectionExist(userId)) {
-      throw new Error("userId does not exist")
+    if (this.connectionExist(userId)) {
+      delete this.pool[userId]
     }
-
-    delete this.pool[userId]
   }
 
   public route(msg: Message) {
@@ -52,7 +48,7 @@ class WsRouter {
       // send the message to the recipient in real-time via ws
       const recipientWs = this.pool[to]
       if (recipientWs) {
-        // console.log("routed message")
+        console.log("routed message")
         recipientWs.send(JSON.stringify(msg))
       }
     }
@@ -86,7 +82,7 @@ export class WsServer {
           const msgString = message.toString()
           const msg: Message = JSON.parse(msgString)
 
-          // console.log(`Received message: ${msgString}`);
+          console.log(`Received message: ${msgString}`);
 
           // Echoing the message back to the client
           // TODO: add the echo back later
@@ -95,12 +91,12 @@ export class WsServer {
           if (!userId) userId = msg.from
           const type = msg.type
           if (type === MsgType.Register) {
-            // console.log("registered for:", msg.from)
+            console.log("registered for:", msg.from)
             this.router.addNewConnections(msg.from, ws)
           }
-          // else if (type === MsgType.Unregister) {
-          //   this.router.removeConnections(msg.from, ws)
-          // } 
+          else if (type === MsgType.Unregister) {
+            this.router.removeConnections(msg.from, ws)
+          }
           else if (type === MsgType.Normal) {
             // do not allow empty payload for normal messages
             if (msg.payload.length === 0) return
@@ -110,7 +106,7 @@ export class WsServer {
 
             // Data Persistence: publishes the message to Queue
             await this.producer.send(msgString)
-            // console.log("sent message into the queue")
+            console.log("sent message into the queue")
           }
         });
 

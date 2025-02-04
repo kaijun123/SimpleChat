@@ -111,8 +111,6 @@
 
     // Event listener for incoming messages
     socket.addEventListener('message', (event) => {
-      // TODO: handle the echo later
-      // TODO: prevent the registration message from showing
       const messageString = event.data.toString()
       const message = JSON.parse(messageString)
       console.log("message:", message)
@@ -161,6 +159,9 @@
 
       const messageInput = document.getElementById('messageInput');
       messageInput.value = ''
+
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML = ''
 
       // disable the sendButton
       document.getElementById('sendButton').disabled = true
