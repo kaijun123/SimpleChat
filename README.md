@@ -2,8 +2,8 @@
 
 #### About
 - A simple chat app that uses websocket for real-time message routing, and rabbitmq to decouple the incoming messages and the db writes and increase throughput.
-- Websocket is hosted at ws://localhost:8080/
-- Simple UI can be found at localhost:3000/client for testing of functionalities
+- Websocket is hosted at `ws://localhost:8080/`
+- Simple UI can be found at `localhost:3000/client` for testing of functionalities
 
 #### Technology
 - Websocket: Real-time bi-directional networking
