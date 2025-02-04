@@ -72,7 +72,7 @@ export class ModelUtils {
   public static standardColumns = {
     id: this.primaryKey(),
     createdAt: this.timestamp(true, DataTypes.NOW),
-    // updatedAt: this.timestamp(),
+    updatedAt: this.timestamp(),
     // deletedAt: timestamp(),
   };
 }

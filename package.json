@@ -11,6 +11,7 @@
     "db:create": "npm run script ./scripts/create.ts",
     "db:drop": "npm run script ./scripts/drop.ts",
     "db:migrate": "sequelize-cli db:migrate",
+    "db:unmigrate": "sequelize-cli db:migrate:undo",
     "db:reset": "npm run db:drop && npm run db:create && npm run db:migrate",
     "db:genConfig": "npm run script ./scripts/genConfig.ts"
   },
