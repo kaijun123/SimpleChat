@@ -17,7 +17,6 @@
 #### Necessary Files
 - .env file in root directory; variables to include
   - `ENVIRONMENT`
-  - `WEBSOCKET`
 
 #### Quick Start:
 ```bash
@@ -25,7 +24,7 @@
 docker pull postgres
 
 # Start the posgres docker container
-docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres
+docker run --name some-postgres -e POSTGRES_PASSWORD=password -p 5432:5431 -d postgres
 
 # Pull rabbitmq image
 docker pull rabbitmq:3-management

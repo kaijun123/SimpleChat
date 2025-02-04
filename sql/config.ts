@@ -7,8 +7,8 @@ const config: SimpleMap<DatabaseConfig> = {
   development: {
     database: "chat-db",
     user: "postgres",
-    password: "",
-    port: 5432,
+    password: "password",
+    port: 5431,
     host: "localhost",
     dialect: "postgres"
   },
