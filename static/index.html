@@ -76,8 +76,8 @@
 
       <h1>Real-Time Chat</h1>
       <div class="input-group">
-        <label for="myId">My Id:</label>
-        <input type="text" id="myId" />
+        <label for="fromId">My Id:</label>
+        <input type="text" id="fromId" />
       </div>
 
       <div class="input-group">
@@ -91,7 +91,7 @@
       <p>Message:</p>
       <textarea type="text" id="messageInput"></textarea>
       <br>
-      <button onclick="sendMessage()">Send</button>
+      <button id="sendButton" onclick="sendMessage('normal')" disabled>Send</button>
     </div>
 
     <div class="right">
@@ -111,10 +111,18 @@
 
     // Event listener for incoming messages
     socket.addEventListener('message', (event) => {
-      displayMessages("recipient", event.data.toString())
+      // TODO: handle the echo later
+      // TODO: prevent the registration message from showing
+      const messageString = event.data.toString()
+      const message = JSON.parse(messageString)
+      console.log("message:", message)
+      const { type, from, to, payload } = message
+      if (type === "normal") {
+        displayMessage(from, payload)
+      }
     });
 
-    function displayMessages(user, text) {
+    function displayMessage(user, text) {
       const messagesDiv = document.getElementById('messages');
       // determine the class
       const messageClass = user === "me" ? "myMsg" : "recipientMsg"
@@ -124,23 +132,28 @@
           <p>${user}:</p>
           <p>${text}</p>
         </div>
-      
       `
     }
 
     // Function to register user and the recipient
     function register() {
       console.log("register user and recipient")
-      document.getElementById('myId').readOnly = true
+      document.getElementById('fromId').readOnly = true
       document.getElementById('recipientId').readOnly = true
+
+      // undisable the sendButton
+      document.getElementById('sendButton').disabled = false
+
+      // send registration message to register the ws connection into the pool
+      sendMessage("register")
     }
 
     // Function to register user and the recipient
     function unregister() {
       console.log("unregister user and recipient")
-      const myId = document.getElementById('myId')
-      myId.readOnly = false
-      myId.value = ''
+      const fromId = document.getElementById('fromId')
+      fromId.readOnly = false
+      fromId.value = ''
 
       const recipientId = document.getElementById('recipientId')
       recipientId.readOnly = false
@@ -148,16 +161,44 @@
 
       const messageInput = document.getElementById('messageInput');
       messageInput.value = ''
+
+      // disable the sendButton
+      document.getElementById('sendButton').disabled = true
+      // sendMessage("unregister")
+    }
+
+    function getMessage(type) {
+      const fromId = document.getElementById('fromId')
+      const recipientId = document.getElementById('recipientId')
+      const messageInput = document.getElementById('messageInput');
+
+      const message = {
+        type: type,
+        from: fromId.value,
+        to: recipientId.value,
+        payload: messageInput.value
+      }
+
+      return message
     }
 
     // Function to send messages
-    function sendMessage() {
-      console.log("sent message")
+    function sendMessage(type) {
+      // check if payload is non-empty
       const messageInput = document.getElementById('messageInput');
-      const message = messageInput.value;
-      socket.send(message);
+      if (type === "normal" && messageInput.value.length === 0) {
+        return
+      }
+
+      const message = getMessage(type)
+      socket.send(JSON.stringify(message));
+      console.log("sent message:", JSON.stringify(message))
+
       messageInput.value = '';
-      displayMessages("me", message)
+
+      if (type === "normal") {
+        displayMessage("me", message.payload)
+      }
     }
   </script>
 </body>

@@ -2,7 +2,14 @@ import WebSocket from "ws"
 import { SimpleMap } from "src/utils/types"
 import { Producer, ProducerManager } from "./SvQueue"
 
+enum MsgType {
+  Register = "register",
+  Unregister = "unregister",
+  Normal = "normal"
+}
+
 export type Message = {
+  type: MsgType,
   from: string,
   to: string,
   payload: string,
@@ -39,12 +46,15 @@ class WsRouter {
   }
 
   public route(msg: Message) {
-    const { from, to, payload } = msg
+    const { type, to } = msg
 
-    // send the message to the recipient in real-time via ws
-    const recipientWs = this.pool[to]
-    if (recipientWs) {
-      recipientWs.send(JSON.stringify(msg))
+    if (type == MsgType.Normal) {
+      // send the message to the recipient in real-time via ws
+      const recipientWs = this.pool[to]
+      if (recipientWs) {
+        // console.log("routed message")
+        recipientWs.send(JSON.stringify(msg))
+      }
     }
   }
 }
@@ -69,30 +79,39 @@ export class WsServer {
         let userId: string | null = null
 
         // Sending a message to the client
-        ws.send('Welcome to the WebSocket server!');
+        // ws.send('Welcome to the WebSocket server!');
 
         // Listening for messages from the client
         ws.on('message', async (message) => {
           const msgString = message.toString()
           const msg: Message = JSON.parse(msgString)
-          console.log(`Received message: ${msgString}`);
+
+          // console.log(`Received message: ${msgString}`);
 
           // Echoing the message back to the client
           // TODO: add the echo back later
           // ws.send(`Server received: ${msgString}`);
 
-          // first message -> add the ws connection to the pool
-          if (!userId) {
-            userId = msg.from
-            this.router.addNewConnections(userId, ws)
+          if (!userId) userId = msg.from
+          const type = msg.type
+          if (type === MsgType.Register) {
+            // console.log("registered for:", msg.from)
+            this.router.addNewConnections(msg.from, ws)
           }
+          // else if (type === MsgType.Unregister) {
+          //   this.router.removeConnections(msg.from, ws)
+          // } 
+          else if (type === MsgType.Normal) {
+            // do not allow empty payload for normal messages
+            if (msg.payload.length === 0) return
 
-          // route the message to the recipient
-          this.router.route(msg)
+            // route the message to the recipient
+            this.router.route(msg)
 
-          // Data Persistence: publishes the message to Queue
-          await this.producer.send(msgString)
-          console.log("sent message into the queue")
+            // Data Persistence: publishes the message to Queue
+            await this.producer.send(msgString)
+            // console.log("sent message into the queue")
+          }
         });
 
         // Handling client disconnection
