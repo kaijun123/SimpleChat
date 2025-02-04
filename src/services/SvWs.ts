@@ -1,7 +1,8 @@
 import WebSocket from "ws"
 import { SimpleMap } from "src/utils/types"
+import { Producer, ProducerManager } from "./SvQueue"
 
-type Message = {
+export type Message = {
   from: string,
   to: string,
   payload: string,
@@ -45,18 +46,18 @@ class WsRouter {
     if (recipientWs) {
       recipientWs.send(JSON.stringify(msg))
     }
-
-    // add to queue for persistence
   }
 }
 
 export class WsServer {
   private server: WebSocket.Server
   private router: WsRouter
+  private producer: Producer
 
-  constructor() {
+  constructor(producer: Producer) {
     this.server = new WebSocket.Server({ port: 8080 });
     this.router = new WsRouter()
+    this.producer = producer
   }
 
   public run() {
@@ -71,13 +72,14 @@ export class WsServer {
         ws.send('Welcome to the WebSocket server!');
 
         // Listening for messages from the client
-        ws.on('message', (message) => {
+        ws.on('message', async (message) => {
           const msgString = message.toString()
           const msg: Message = JSON.parse(msgString)
           console.log(`Received message: ${msgString}`);
 
           // Echoing the message back to the client
-          ws.send(`Server received: ${msgString}`);
+          // TODO: add the echo back later
+          // ws.send(`Server received: ${msgString}`);
 
           // first message -> add the ws connection to the pool
           if (!userId) {
@@ -87,6 +89,10 @@ export class WsServer {
 
           // route the message to the recipient
           this.router.route(msg)
+
+          // Data Persistence: publishes the message to Queue
+          await this.producer.send(msgString)
+          console.log("sent message into the queue")
         });
 
         // Handling client disconnection
