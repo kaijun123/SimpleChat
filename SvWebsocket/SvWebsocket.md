@@ -2,6 +2,7 @@
 - Each instance can allow for multiple websocket connections from different clients
 - If the sender and recipient are connected to the same SvWebsocket instance, then it will immediately route the message to the recipient
 - If the sender and recipient are NOT connected to the same SvWebsocket instance, then it will need to find the URL of the recipient's SvWebsocket by getting it from SvDiscover via API calls. Then make an API call to the recipient's SvWebsocket instance to send it to the recipient
+- Allowed flags: `--apiPort`, `--wsPort`
 
 #### Quick Start
 

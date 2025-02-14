@@ -7,7 +7,7 @@
 ### About: Microservices Architecture
 - A chat app that uses microservices architecture to enable **scalability**.
 - Multiple SvWebsocket instances can be set up to accomodate for any number of websocket connections reuqired.
-- To enable the messages to be routed correctly, there was a need to store which SvWebsocket instance the ws connection is connected. Various apis on SvDiscover are exposed for the purpose of writing and reading the URL for the SvWebsocket instance.
+- To enable the messages to be routed correctly, there is a need to store which SvWebsocket instance the ws connection is connected. Various apis on SvDiscover are exposed for the purpose of writing and reading the URL for the SvWebsocket instance.
 - RabbitMQ is used to connect the multiple SvWebsocket instances with SvPersist. SvWebsocket pushes messages to the queue, whereas SvPersist consumes from the queue and writes to the DB. Producers and consumers of RabbitMQ can be configured to increase throughput
 - The hosts and ports can be configured; See the respective `package.json` for the flags accepted
 
@@ -15,6 +15,7 @@
 - Each instance can allow for multiple websocket connections from different clients
 - If the sender and recipient are connected to the same SvWebsocket instance, then it will immediately route the message to the recipient
 - If the sender and recipient are NOT connected to the same SvWebsocket instance, then it will need to find the URL of the recipient's SvWebsocket by getting it from SvDiscover via API calls. Then make an API call to the recipient's SvWebsocket instance to send it to the recipient
+- A **connection pool** of RabbitMQ producers were created to reduce the cost of creating and closing multiple connections
 
 #### SvDiscover
 - A service that stores the mapping of the userId with the SvWebsocket URL that the user's websocket connection is with
@@ -23,6 +24,7 @@
 
 #### SvPersist
 - A service that consumes messages from the RabbitMQ queue and then write it to the Postgresql DB for pesistence
+- A **connection pool** of RabbitMQ consumers were created to reduce the cost of creating and closing multiple connections
 
 
 ### Technology
@@ -119,6 +121,5 @@ npm run start-ws-2
   - https://github.com/redis/node-redis
 
 ### TODO:
-- Look into whether multiple producers are needed and how to create a pool of producers to choose from
 - Look into bulk inserts for the db to speed up the db inserts
 - Add history api to get all the past messages

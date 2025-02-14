@@ -1,5 +1,6 @@
 ### SvPersist
 - A service that consumes messages from the RabbitMQ queue and then write it to the Postgresql DB for pesistence
+- Allowed flags: `--consumer`
 
 #### Quick Start
 
