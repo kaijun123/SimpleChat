@@ -1,46 +1,20 @@
 {
-  "name": "solidityeventlistener",
+  "name": "simplechat",
   "version": "1.0.0",
-  "description": "",
+  "description": "#### About - A simple chat app that uses websocket for real-time message routing, and rabbitmq to decouple the incoming messages and the db writes and increase throughput. - Websocket is hosted at `ws://localhost:8080/` - Simple UI can be found at `localhost:3000/client` for testing of functionalities",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "script": "ts-node",
-    "start": "nodemon ./src/server.ts",
-    "db:create": "npm run script ./scripts/create.ts",
-    "db:drop": "npm run script ./scripts/drop.ts",
-    "db:migrate": "sequelize-cli db:migrate",
-    "db:unmigrate": "sequelize-cli db:migrate:undo",
-    "db:reset": "npm run db:drop && npm run db:create && npm run db:migrate",
-    "db:genConfig": "npm run script ./scripts/genConfig.ts"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "amqplib": "^0.10.4",
-    "bignumber.js": "^9.1.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "ethers": "^5.7.2",
-    "express": "^4.18.2",
-    "path": "^0.12.7",
-    "pg": "^8.8.0",
-    "pg-hstore": "^2.3.4",
-    "pgtools": "^0.3.2",
-    "sequelize": "^6.28.0",
-    "toml": "^3.0.0",
-    "ws": "^8.18.0"
-  },
   "devDependencies": {
-    "@types/amqplib": "^0.10.5",
-    "@types/cors": "^2.8.13",
-    "@types/express": "^4.17.15",
-    "@types/node": "^18.11.18",
-    "@types/ws": "^8.5.14",
-    "nodemon": "^2.0.20",
-    "sequelize-cli": "^6.5.2",
-    "ts-node": "^10.9.1",
-    "typescript": "^4.9.4"
+    "@types/amqplib": "^0.10.6",
+    "@types/node-fetch": "^2.6.12"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.5",
+    "node-fetch": "^2.7.0",
+    "toml": "^3.0.0"
   }
 }

@@ -26,4 +26,4 @@ import { isValidUrl } from '../common/utils';
   app.listen(port, async () => {
     console.log(`Api server is running on localhost:${port}`)
   })
-})()
+})().catch((err) => console.error(err))

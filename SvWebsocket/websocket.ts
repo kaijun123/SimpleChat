@@ -1,21 +1,7 @@
-import WebSocket, { WebSocketServer } from "ws";
-import { HTTPMethods, SimpleMap, apiCall } from "../common/utils";
-// import { Producer, ProducerManager } from "../common/Queue"
+import { ProducerManager } from "../common/Queue";
 import { Request, Response, Router } from "express";
-
-
-enum MsgType {
-  Register = "register",
-  Unregister = "unregister",
-  Normal = "normal"
-}
-
-export type Message = {
-  type: MsgType,
-  from: string,
-  to: string,
-  payload: string,
-}
+import WebSocket, { WebSocketServer } from "ws";
+import { HTTPMethods, Message, MsgType, SimpleMap, apiCall, defaultQueueName } from "../common/utils";
 
 class WsRouter {
   private pool: SimpleMap<WebSocket> // cache of all the current local connections
@@ -40,7 +26,7 @@ class WsRouter {
         // api calls can fail
 
         // add to the discovery service
-        const res = await apiCall(this.discoverUrl + "/set", HTTPMethods.Post, { "key": userId, "value": this.apiUrl })
+        const res = await apiCall(this.discoverUrl + "set", HTTPMethods.Post, { "key": userId, "value": this.apiUrl })
         console.log("addNewConnections: ", res)
 
         this.pool[userId] = ws
@@ -59,7 +45,7 @@ class WsRouter {
         // api calls can fail
 
         // add to the discovery service
-        const res = await apiCall(this.discoverUrl + "/del", HTTPMethods.Delete, { "key": userId })
+        const res = await apiCall(this.discoverUrl + "del", HTTPMethods.Delete, { "key": userId })
         console.log("removeConnections: ", res)
 
         delete this.pool[userId]
@@ -85,7 +71,7 @@ class WsRouter {
       else {
         // recipient not connected to the same SvWebsocket
         // find the url of the recipient's SvWebsocket instance 
-        const res = await apiCall(this.discoverUrl + `/get/${to}`, HTTPMethods.Get)
+        const res = await apiCall(this.discoverUrl + `get/${to}`, HTTPMethods.Get)
         const { value: recipientUrl } = res
 
         // recipient is online
@@ -104,15 +90,18 @@ export class WsServer {
   private apiRouter: Router
   private wsPort: number
   private apiPort: number
+  private producerManager: ProducerManager
+
 
   // private producerManager: ProducerManager
 
   // constructor(producerManager: ProducerManager, port: number) {
-  constructor(wsPort: number, apiPort: number, host: string, discoverUrl: string, apiRouter: Router) {
+  constructor(wsPort: number, apiPort: number, host: string, discoverUrl: string, apiRouter: Router, producerManager: ProducerManager) {
     this.server = new WebSocketServer({ port: wsPort })
     this.wsRouter = new WsRouter(discoverUrl, host + ":" + apiPort)
     this.wsPort = wsPort
     this.apiPort = apiPort
+    this.producerManager = producerManager
 
     // accept messages from other SvWebsocket instances and send to recipient
     this.apiRouter = apiRouter
@@ -132,7 +121,6 @@ export class WsServer {
         res.status(400).send({ "status": error })
       }
     })
-    // this.producerManager = producerManager
   }
 
   public run() {
@@ -177,10 +165,11 @@ export class WsServer {
             // route the message to the recipient
             this.wsRouter.route(msg)
 
-            // // Data Persistence: publishes the message to Queue
-            // const producer = await this.producerManager.waitForProducer("message")
-            // await producer.send(msgString)
-            // console.log("sent message into the queue")
+            // Data Persistence: publishes the message to Queue
+            const [id, producer] = await this.producerManager.waitForProducer("message")
+            await producer.send(msgString)
+            this.producerManager.release(defaultQueueName, id)
+            console.log("sent message into the queue")
           }
         } catch (error) {
           console.error(error)

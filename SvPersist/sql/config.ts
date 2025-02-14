@@ -1,4 +1,5 @@
-import { DatabaseConfig, SimpleMap } from "src/utils/types";
+import { DatabaseConfig } from "../utils/types";
+import { SimpleMap } from "../../common/utils"
 import * as dotenv from "dotenv";
 dotenv.config()
 

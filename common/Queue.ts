@@ -1,4 +1,5 @@
 import amqlib, { Channel, Connection } from "amqplib"
+import { SimpleMap } from "./utils"
 
 // Each connection represents 1 TCP/IP connection
 // They are heavyweight and should not be open and closed easily
@@ -36,23 +37,77 @@ export class QueueManager {
 }
 
 export class ProducerManager {
-  public connection?: Connection;
   public url: string;
+  public busy: SimpleMap<SimpleMap<Producer>> = {} // {queueName: {id: producer}}
+  public free: SimpleMap<SimpleMap<Producer>> = {} // {queueName: {id: producer}}
+  public poolSize: number = 0
+  public connection?: Connection;
 
   public constructor(url: string) {
-    this.url = url
-    console.log("creating an instance of ProducerManager")
+    this.url = url;
+    console.log("Creating an instance of ProducerManager");
   }
 
   public async init() {
-    this.connection = await connect(this.url!)
-    console.log("creating a connection for ProducerManager")
+    this.connection = await connect(this.url);
+    console.log("Creating a connection for ProducerManager");
   }
 
-  public async add(queueName: string): Promise<Producer> {
-    const producer = new Producer(queueName, this.connection!)
-    await producer.init()
-    return producer
+  public async add(queueName: string, number: number = 1) {
+    if (!this.free[queueName]) this.free[queueName] = {};
+    if (!this.busy[queueName]) this.busy[queueName] = {};
+
+    const freeMp = this.free[queueName]
+
+    for (var i = 0; i < number; i++) {
+      const producer = new Producer(queueName, this.connection!)
+      await producer.init()
+      this.poolSize += 1
+      freeMp[String(this.poolSize)] = producer
+    }
+  }
+
+  public get(queueName: string): [string, Producer] | null {
+    if (!this.free[queueName] || Object.keys(this.free[queueName]).length === 0) {
+      console.warn(`No available producer for queue: ${queueName}`);
+      return null;
+    }
+
+    const freeMp = this.free[queueName];
+    const busyMp = this.busy[queueName] || (this.busy[queueName] = {});
+
+    const producers = Object.entries(freeMp);
+    const [id, producer] = producers[0];
+
+    // Remove from free and add to busy
+    delete freeMp[id];
+    busyMp[id] = producer;
+
+    return [id, producer];
+  }
+
+  public async waitForProducer(queueName: string): Promise<[string, Producer]> {
+    while (!this.free[queueName] || Object.keys(this.free[queueName]).length === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for 100ms before retrying
+    }
+    console.log("Obtained producer")
+    return this.get(queueName)!;
+  }
+
+  public release(queueName: string, id: string) {
+    if (!this.busy[queueName] || !this.busy[queueName][id]) {
+      console.warn(`Producer with id ${id} is not found in busy queue: ${queueName}`);
+      return;
+    }
+
+    if (!this.free[queueName]) this.free[queueName] = {};
+
+    const producer = this.busy[queueName][id];
+
+    // Remove from busy and add back to free
+    delete this.busy[queueName][id];
+    this.free[queueName][id] = producer;
+    console.log("Released producer")
   }
 }
 
@@ -62,12 +117,12 @@ export class ConsumerManager {
 
   public constructor(url: string) {
     this.url = url
-    console.log("creating an instance of ConsumerManager")
+    console.log("Creating an instance of ConsumerManager")
   }
 
   public async init() {
     this.connection = await connect(this.url!)
-    console.log("creating a connection for ConsumerManager")
+    console.log("Creating a connection for ConsumerManager")
   }
 
   public async add(queueName: string, callback: (payload: any) => Promise<void>, number: number = 1) {
@@ -94,7 +149,7 @@ export class Producer {
     // this.exchangeType = exchangeType
 
     this.connection = connection
-    console.log("creating an instance of Producer")
+    console.log("Creating an instance of Producer")
   }
 
   public async init() {

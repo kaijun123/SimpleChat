@@ -2,7 +2,7 @@
 require("../sql/setup");
 
 import { QueryInterface } from "sequelize";
-import { ModelUtils } from "../src/utils/model";
+import { ModelUtils } from "../utils/model";
 
 export const up = async (queryInterface: QueryInterface) => {
   await queryInterface.sequelize.transaction(async (transaction) => {

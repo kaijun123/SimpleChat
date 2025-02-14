@@ -4,7 +4,8 @@ import express, { json } from "express";
 import config from "../common/setup";
 import { isValidUrl } from '../common/utils';
 import { WsServer } from "./websocket";
-import router from "./routes";
+import apiRouter from "./routes";
+import { ProducerManager } from "../common/Queue";
 
 
 (async () => {
@@ -28,32 +29,32 @@ import router from "./routes";
 
   // parse configs
   config.__configure("../config")
-  const mqUrl = config.mqUrl || "amqp://localhost:5672"
-  const discoverUrl = config.discoverUrl || "localhost:3001"
-  isValidUrl(mqUrl)
-  isValidUrl(discoverUrl)
+  const mqUrl = isValidUrl(config.mqUrl).toString()
+  const discoverUrl = isValidUrl(config.discoverUrl).toString()
+  console.log("mqUrl", mqUrl)
 
   const host = process.env.host || "http://localhost"
-  console.log("discoverUrl:", discoverUrl)
+  // console.log("discoverUrl:", discoverUrl)
 
-  // // Create the producer
-  // const producerManager = new ProducerManager(mqUrl)
-  // await producerManager.add("message", 5)
+  // Create the producer
+  const producerManager = new ProducerManager(mqUrl)
+  await producerManager.init()
+  await producerManager.add("message", 5)
 
-  // websocket server
   // const ws = new WsServer(producerManager, Number(wsPort))
 
   // express api server
   const app = express()
   app.use(json())
   app.use(cors())
-  app.use(router)
+  app.use(apiRouter)
 
-  const ws = new WsServer(wsPort, apiPort, host, discoverUrl, router)
+  // websocket server
+  const ws = new WsServer(wsPort, apiPort, host, discoverUrl, apiRouter, producerManager)
   ws.run()
 
   app.listen(apiPort, async () => {
     console.log(`Api server is running on localhost:${apiPort}`)
   })
-})()
+})().catch((err) => console.error(err))
 
