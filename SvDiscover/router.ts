@@ -8,12 +8,13 @@ const client = new RedisClient()
 client.connect().then(() => {
   console.log("Client connected!");
 
-  router.get("/get/", async (req: Request, res: Response) => {
+  router.get("/get", async (req: Request, res: Response) => {
     try {
       if (!req.body.key) {
         res.status(400).json({ status: "error" });
         return
       }
+      console.log("get:", req.body)
 
       const { key } = req.body;
       // NOTE: if the kv-pair does not exist, you will get a null value. Need to check the value
@@ -31,6 +32,7 @@ client.connect().then(() => {
         res.status(400).json({ status: "error" });
         return
       }
+      console.log("set:", req.body)
 
       const { key, value } = req.body;
       await client.set(key, value);
@@ -47,6 +49,7 @@ client.connect().then(() => {
         res.status(400).json({ status: "error" });
         return
       }
+      console.log("del:", req.body)
 
       const { key } = req.body;
       await client.del(key);
