@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start-ws": "nodemon ./server.ts --port 3002 --wsPort 8080"
+    "start-ws": "nodemon ./server.ts --apiPort 3002 --wsPort 8082",
+    "start-ws-2": "nodemon ./server.ts --apiPort 3003 --wsPort 8083"
   },
   "author": "",
   "license": "ISC",

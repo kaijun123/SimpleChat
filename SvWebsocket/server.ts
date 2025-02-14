@@ -4,23 +4,24 @@ import express, { json } from "express";
 import config from "../common/setup";
 import { isValidUrl } from '../common/utils';
 import { WsServer } from "./websocket";
+import router from "./routes";
 
 
 (async () => {
   // parse command line arguments
   const args = process.argv.slice(2);
-  let port: number | null = null, wsPort: number | null = null
+  let apiPort: number | null = null, wsPort: number | null = null
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--port" && args[i + 1]) {
-      port = parseInt(args[i + 1], 10);
+    if (args[i] === "--apiPort" && args[i + 1]) {
+      apiPort = parseInt(args[i + 1], 10);
     }
     if (args[i] === "--wsPort" && args[i + 1]) {
       wsPort = parseInt(args[i + 1], 10);
     }
   }
   // console.log("port:", port, "wsPort:", wsPort)
-  if (!port || !wsPort) {
+  if (!apiPort || !wsPort) {
     console.error("Incomplete command: port or wsPort is not provided!")
     process.exit(1)
   }
@@ -41,17 +42,18 @@ import { WsServer } from "./websocket";
 
   // websocket server
   // const ws = new WsServer(producerManager, Number(wsPort))
-  const ws = new WsServer(wsPort, host, discoverUrl)
-  ws.run()
 
   // express api server
   const app = express()
-
-  // app.use(router)
   app.use(json())
   app.use(cors())
-  app.listen(port, async () => {
-    console.log(`Api server is running on localhost:${port}`)
+  app.use(router)
+
+  const ws = new WsServer(wsPort, apiPort, host, discoverUrl, router)
+  ws.run()
+
+  app.listen(apiPort, async () => {
+    console.log(`Api server is running on localhost:${apiPort}`)
   })
 })()
 

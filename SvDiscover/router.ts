@@ -8,15 +8,16 @@ const client = new RedisClient()
 client.connect().then(() => {
   console.log("Client connected!");
 
-  router.get("/get", async (req: Request, res: Response) => {
+  router.get("/get/:key", async (req: Request, res: Response) => {
     try {
-      if (!req.body.key) {
+      if (!req.params.key || req.params.key === undefined) {
         res.status(400).json({ status: "error" });
         return
       }
-      console.log("get:", req.body)
 
-      const { key } = req.body;
+      const key = req.params.key
+      console.log("key:", key)
+
       // NOTE: if the kv-pair does not exist, you will get a null value. Need to check the value
       const value = await client.get(key);
       res.status(200).json({ status: "success", value });
