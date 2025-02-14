@@ -102,7 +102,7 @@
   </div>
 
   <script>
-    const socket = new WebSocket('ws://localhost:8080');
+    const socket = new WebSocket('ws://localhost:8082');
 
     // Event listener for WebSocket connection open
     socket.addEventListener('open', () => {
@@ -165,7 +165,7 @@
 
       // disable the sendButton
       document.getElementById('sendButton').disabled = true
-      // sendMessage("unregister")
+      sendMessage("unregister")
     }
 
     function getMessage(type) {
