@@ -1,0 +1,31 @@
+services:
+  redis:
+    image: "redis:alpine"
+  discover:
+    build:
+      # Note: all paths in the Dockerfile is relative to the build context, 
+      # and not the file structure
+      context: .
+      dockerfile: ./SvDiscover/dockerfile
+    environment:
+      # connect via docker network
+      - redisUrl=redis://redis:6379
+    ports:
+      - "3001:3001"
+    depends_on:
+      redis:
+        condition: service_started
+        restart: true
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  # db:
+  #   image: postgres:17
+  #   ports:
+  #   - "5432:5431"
+  #   environment:
+  #   - POSTGRES_USER=postgres
+  #   - POSTGRES_PASSWORD=postgres
+

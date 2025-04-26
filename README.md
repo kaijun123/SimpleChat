@@ -119,6 +119,7 @@ npm run start-ws-2
 - Redis:
   - https://www.digitalocean.com/community/tutorials/how-to-implement-caching-in-node-js-using-redis
   - https://github.com/redis/node-redis
+  - https://redis.io/docs/latest/develop/clients/nodejs/
 
 ### TODO:
 - Look into bulk inserts for the db to speed up the db inserts

@@ -1,0 +1,21 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# copy config
+WORKDIR /app/config
+COPY ./config .
+
+# copy /common
+WORKDIR /app/common
+COPY ./common/package*.json .
+RUN npm install
+COPY ./common .
+
+# copy SvDiscover
+WORKDIR /app/SvDiscover
+COPY ./SvDiscover/package*.json .
+RUN npm install
+COPY ./SvDiscover .
+
+CMD ["npm", "run", "start-discover"]
