@@ -63,7 +63,7 @@ cd SvPersist
 docker pull postgres
 
 # Start the posgres docker container
-docker run --name some-postgres -e POSTGRES_PASSWORD=password -p 5432:5431 -d postgres
+docker run --name some-postgres -e POSTGRES_PASSWORD=password -p 5431:5432 -d postgres
 
 # Pull rabbitmq image
 docker pull rabbitmq:3-management

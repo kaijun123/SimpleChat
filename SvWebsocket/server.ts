@@ -32,6 +32,7 @@ import { ProducerManager } from "../common/Queue";
   const mqUrl = isValidUrl(config.mqUrl).toString()
   const discoverUrl = isValidUrl(config.discoverUrl).toString()
   console.log("mqUrl", mqUrl)
+  console.log("discoverUrl:", discoverUrl)
 
   const host = process.env.host || "http://localhost"
   // console.log("discoverUrl:", discoverUrl)

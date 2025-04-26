@@ -97,23 +97,23 @@ export class WsServer {
 
   // constructor(producerManager: ProducerManager, port: number) {
   constructor(wsPort: number, apiPort: number, host: string, discoverUrl: string, apiRouter: Router, producerManager: ProducerManager) {
-    this.server = new WebSocketServer({ port: wsPort })
-    this.wsRouter = new WsRouter(discoverUrl, host + ":" + apiPort)
     this.wsPort = wsPort
     this.apiPort = apiPort
+    this.server = new WebSocketServer({ port: wsPort })
+    this.wsRouter = new WsRouter(discoverUrl, host + ":" + this.apiPort)
     this.producerManager = producerManager
 
     // accept messages from other SvWebsocket instances and send to recipient
     this.apiRouter = apiRouter
-    apiRouter.post("/send", (req: Request, res: Response) => {
+    this.apiRouter.post("/send", (req: Request, res: Response) => {
       try {
         // console.log("reached", req.body)
         if (!req.body.type || !req.body.from || !req.body.to || !req.body.payload) {
           throw new Error("Invalid message received")
         }
 
-        const { type, from, to, payload }: Message = req.body
-        this.wsRouter.route({ type, from, to, payload })
+        const { type, from, to, payload, sentTime }: Message = req.body
+        this.wsRouter.route({ type, from, to, payload, sentTime })
 
         res.status(200).send({ "status": "success" })
       } catch (error) {
@@ -149,11 +149,11 @@ export class WsServer {
           if (type === MsgType.Register) {
             if (!userId) userId = msg.from
             console.log("registered for:", msg.from)
-            await this.wsRouter.addNewConnections(msg.from, ws)
+            // await this.wsRouter.addNewConnections(msg.from, ws)
           }
           else if (type === MsgType.Unregister) {
             console.log("unregistered for:", msg.from)
-            await this.wsRouter.removeConnections(msg.from, ws)
+            // await this.wsRouter.removeConnections(msg.from, ws)
           }
           else if (type === MsgType.Normal) {
             // only allow messages to be sent after registering
@@ -162,8 +162,9 @@ export class WsServer {
             // do not allow empty payload for normal messages
             if (msg.payload.length === 0) return
 
-            // route the message to the recipient
-            this.wsRouter.route(msg)
+            // TODO: Shift the routing of the message to the consumer from the queue
+            // // route the message to the recipient
+            // this.wsRouter.route(msg)
 
             // Data Persistence: publishes the message to Queue
             const [id, producer] = await this.producerManager.waitForProducer("message")

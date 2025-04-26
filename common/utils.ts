@@ -17,6 +17,7 @@ export type Message = {
   from: string,
   to: string,
   payload: string,
+  sentTime: string
 }
 
 export enum HTTPMethods {

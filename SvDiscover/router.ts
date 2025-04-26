@@ -1,8 +1,11 @@
 import { Request, Response, Router } from "express";
 import { RedisClient } from "./client"
+import "dotenv/config"
 
+const redisUrl = process.env.redisUrl ||  ""
+console.log("redisUrl:", redisUrl)
 const router = Router();
-const client = new RedisClient()
+const client = new RedisClient(redisUrl)
 
 // Need to ensure that the client is initialised
 client.connect().then(() => {

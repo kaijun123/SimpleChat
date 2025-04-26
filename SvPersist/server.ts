@@ -24,10 +24,10 @@ import MessageModel from "./models/Message";
   // RabbitMQ
   const callback = async (msg: Message) => {
     console.log("consumed message from queue:", JSON.stringify(msg))
-    const { from, to, payload } = msg
+    const { from, to, payload, sentTime } = msg
     // singular inserts for the time
     // TODO: look into bulk inserts
-    await MessageModel.create({ from, to, payload })
+    await MessageModel.create({ from, to, payload, sentTime })
   }
 
   const consumerManager = new ConsumerManager(mqUrl.toString())

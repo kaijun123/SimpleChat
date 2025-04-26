@@ -1,7 +1,28 @@
 
 import Sequelize, { DataTypes, ModelAttributeColumnOptions } from "sequelize";
 
+
+/**
+ * Utility functions used to specify the columns in a model schema
+ * Docs: https://sequelize.org/docs/v7/models/data-types/
+ * 
+ * Note: Sequelize.STRING is convered to VARCHAR(255) in Postgresql. Sequelize.TEXT is convered to TEXT in Postgresql, which allows strings of variable length.
+ */
 export class ModelUtils {
+  public static genericText = (required = false, unique = false, length?: number): ModelAttributeColumnOptions => ({
+    type: Sequelize.TEXT,
+    allowNull: !required,
+    unique: unique,
+    validate: {
+      ...length && {
+        len: [0, length],
+      },
+
+      ...required && {
+        notEmpty: required
+      },
+    },
+  });
   public static genericString = (required = false, unique = false, length?: number): ModelAttributeColumnOptions => ({
     type: Sequelize.STRING,
     allowNull: !required,

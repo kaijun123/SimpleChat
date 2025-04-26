@@ -8,7 +8,8 @@ MessageModel.init({
   ...ModelUtils.standardColumns,
   from: ModelUtils.genericString(true),
   to: ModelUtils.genericString(true),
-  payload: ModelUtils.genericString(true)
+  payload: ModelUtils.genericText(true),
+  sentTime: ModelUtils.timestamp(true),
 }, { modelName: "message", sequelize })
 
 export default MessageModel;

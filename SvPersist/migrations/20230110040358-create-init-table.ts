@@ -14,7 +14,8 @@ export const up = async (queryInterface: QueryInterface) => {
       ...ModelUtils.standardColumns,
       from: ModelUtils.genericString(true),
       to: ModelUtils.genericString(true),
-      payload: ModelUtils.genericString(true)
+      payload: ModelUtils.genericText(true),
+      sentTime: ModelUtils.timestamp(true),
     }, { transaction });
 
   })
@@ -23,6 +24,6 @@ export const up = async (queryInterface: QueryInterface) => {
 export const down = async (queryInterface: QueryInterface) => {
   await queryInterface.sequelize.transaction(async (transaction) => {
     // reverse the above
-    queryInterface.dropTable("transfer");
+    queryInterface.dropTable("messages");
   })
 };
